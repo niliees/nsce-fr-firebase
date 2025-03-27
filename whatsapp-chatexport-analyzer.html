@@ -271,6 +271,189 @@
             color: #666;
         }
 
+        /* Phone View Styles */
+        .phone-container {
+            max-width: 360px;
+            height: 600px;
+            margin: 0 auto;
+            border: 12px solid #000;
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .phone-container.fullscreen {
+            max-width: 100%;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+        }
+        
+        .phone-header {
+            background-color: #075E54;
+            color: white;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .phone-header-title {
+            margin-left: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .phone-back {
+            color: white;
+            font-size: 20px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        
+        .phone-fullscreen-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .phone-fullscreen-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .phone-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ccc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .phone-chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #E5DDD5;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAQAAACROWYpAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQfiARMQDwRaCt24AAAAgUlEQVQ4y+2UMQ6AIAxFX4g3cgAn138m5gLGhHAJB2Ui6FTaDoal/l1S8tL+lhTUUoiJKOFNmFTAa/yAx//+KCUH7vQJRVN917rLsoJZCSjPzxqw1dRQWi1LXXHmyhsrfrA+zIYP9oFOhbdz4YNF4KaHc/WzBVw5gvobn7sXwVuM4n12UK4AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTgtMDEtMTlUMTY6MTU6MDQrMDE6MDDPCDhkAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE4LTAxLTE5VDE2OjE1OjA0KzAxOjAwvlWA2AAAAABJRU5ErkJggg==');
+            padding: 10px;
+        }
+        
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        
+        .phone-input-area {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f0f0;
+            align-items: center;
+            flex-shrink: 0;
+            border-top: 1px solid #ddd;
+        }
+        
+        .phone-input-box {
+            flex-grow: 1;
+            background-color: white;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin: 0 10px;
+            border: none;
+            height: 40px;
+        }
+        
+        .phone-send-button {
+            width: 40px;
+            height: 40px;
+            background-color: #128C7E;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .phone-chat-bubble {
+            max-width: 80%;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border-radius: 7px;
+            position: relative;
+            word-wrap: break-word;
+            font-size: 14px;
+        }
+        
+        .phone-sent {
+            background-color: #DCF8C6;
+            margin-left: auto;
+            border-top-right-radius: 0;
+        }
+        
+        .phone-received {
+            background-color: white;
+            margin-right: auto;
+            border-top-left-radius: 0;
+        }
+        
+        .phone-sender-name {
+            font-weight: bold;
+            color: #303030;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        
+        .phone-message-info {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+            margin-top: 2px;
+        }
+        
+        .phone-date-divider {
+            text-align: center;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .phone-date-divider span {
+            background-color: #e1f3fb;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #555;
+        }
+        
         /* Responsive design */
         @media (max-width: 768px) {
             .content-section {
@@ -278,12 +461,16 @@
                 height: auto;
             }
             
-            .chat-section, .analytics-section {
+            .chat-section, .analytics-section, .phone-section {
                 height: 500px;
             }
             
             .chat-bubble {
                 max-width: 90%;
+            }
+            
+            .phone-container {
+                height: 500px;
             }
         }
         
@@ -350,6 +537,7 @@
             <div class="tab-buttons">
                 <button class="tab-btn active" data-target="chat">Chat anzeigen</button>
                 <button class="tab-btn" data-target="analytics">Analysen</button>
+                <button class="tab-btn" data-target="phone">WA Handy</button>
             </div>
             <div class="search-bar">
                 <input type="text" placeholder="Suche im Chat..." id="search-input">
@@ -365,6 +553,10 @@
             <div class="analytics-section" id="analytics-section">
                 <div class="info-message">Bitte lade eine WhatsApp-Chat-Datei hoch, um Analysen anzuzeigen.</div>
             </div>
+            
+            <div class="phone-section" id="phone-section" style="display: none;">
+                <div class="info-message">Bitte lade eine WhatsApp-Chat-Datei hoch, um den Chat in der Handy-Ansicht zu sehen.</div>
+            </div>
         </div>
     </div>
     
@@ -375,6 +567,10 @@
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         <div class="progress-text" id="progress-text">0%</div>
+    </div>
+    
+    <div class="fullscreen-overlay" id="fullscreen-overlay">
+        <!-- Phone container will be moved here when in fullscreen mode -->
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -403,6 +599,7 @@
         const tabButtons = document.querySelectorAll('.tab-btn');
         const chatSection = document.getElementById('chat-section');
         const analyticsSection = document.getElementById('analytics-section');
+        const phoneSection = document.getElementById('phone-section');
         const searchInput = document.getElementById('search-input');
         const loadingOverlay = document.getElementById('loading-overlay');
         const progressBar = document.getElementById('progress-bar');
@@ -581,6 +778,8 @@
             // Hide all sections
             chatSection.classList.remove('active-section');
             analyticsSection.classList.remove('active-section');
+            const phoneSection = document.getElementById('phone-section');
+            phoneSection.style.display = 'none';
             
             // Show selected section
             const targetSection = e.target.getAttribute('data-target');
@@ -588,6 +787,12 @@
                 chatSection.classList.add('active-section');
             } else if (targetSection === 'analytics') {
                 analyticsSection.classList.add('active-section');
+            } else if (targetSection === 'phone') {
+                phoneSection.style.display = 'block';
+                // Render phone view if not already rendered
+                if (chatMessages.length > 0 && phoneSection.querySelector('.phone-container') === null) {
+                    renderPhoneView();
+                }
             }
         }
         
@@ -690,8 +895,198 @@
             // Prepare basic analytics
             preAnalyzeChat(chatMessages);
             
+            // Update phone view if it's active
+            const phoneTab = document.querySelector('.tab-btn[data-target="phone"]');
+            if (phoneTab.classList.contains('active')) {
+                renderPhoneView();
+            }
+            
             loadingOverlay.style.display = 'none';
             chatPagination.style.display = 'block';
+        }
+        
+        // Render phone view
+        function renderPhoneView() {
+            phoneSection.innerHTML = '';
+            
+            if (chatMessages.length === 0) {
+                phoneSection.innerHTML = '<div class="info-message">Keine Chat-Nachrichten gefunden.</div>';
+                return;
+            }
+            
+            // Create phone container
+            const phoneContainer = document.createElement('div');
+            phoneContainer.className = 'phone-container';
+            phoneContainer.id = 'phone-container';
+            
+            // Create phone header
+            const phoneHeader = document.createElement('div');
+            phoneHeader.className = 'phone-header';
+            
+            // Get chat participants
+            const participantsArray = Array.from(participants);
+            const chatName = participantsArray.length > 1 ? 
+                            participantsArray.slice(0, 2).join(', ') + (participantsArray.length > 2 ? '...' : '') : 
+                            participantsArray[0];
+            
+            phoneHeader.innerHTML = `
+                <div class="phone-back">←</div>
+                <div class="phone-avatar">${chatName.charAt(0)}</div>
+                <div class="phone-header-title">${chatName}</div>
+                <div class="phone-fullscreen-toggle" id="fullscreen-btn">⛶</div>
+            `;
+            
+            // Create chat container
+            const phoneChatContainer = document.createElement('div');
+            phoneChatContainer.className = 'phone-chat-container';
+            
+            // Create input area
+            const phoneInputArea = document.createElement('div');
+            phoneInputArea.className = 'phone-input-area';
+            phoneInputArea.innerHTML = `
+                <div class="phone-emoji">😊</div>
+                <div class="phone-input-box">Nachricht</div>
+                <div class="phone-send-button">→</div>
+            `;
+            
+            // Add elements to phone container
+            phoneContainer.appendChild(phoneHeader);
+            phoneContainer.appendChild(phoneChatContainer);
+            phoneContainer.appendChild(phoneInputArea);
+            
+            // Add phone container to phone section
+            phoneSection.appendChild(phoneContainer);
+            
+            // Add fullscreen toggle function
+            document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
+            
+            // Render messages in batches to avoid freezing
+            renderPhoneMessages(phoneChatContainer, chatMessages);
+        }
+        
+        // Toggle fullscreen mode for phone view
+        function toggleFullscreen() {
+            const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+            const phoneContainer = document.getElementById('phone-container');
+            
+            if (fullscreenOverlay.classList.contains('active')) {
+                // Exit fullscreen mode
+                fullscreenOverlay.classList.remove('active');
+                phoneSection.appendChild(phoneContainer);
+                document.getElementById('fullscreen-btn').textContent = '⛶';
+                
+                // If browser is in fullscreen mode, exit that too
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(err => {
+                        console.error('Error exiting fullscreen:', err);
+                    });
+                }
+            } else {
+                // Enter fullscreen mode
+                fullscreenOverlay.classList.add('active');
+                fullscreenOverlay.appendChild(phoneContainer);
+                document.getElementById('fullscreen-btn').textContent = '❌';
+                
+                // Request browser fullscreen if supported
+                if (fullscreenOverlay.requestFullscreen) {
+                    fullscreenOverlay.requestFullscreen().catch(err => {
+                        console.error('Error entering fullscreen:', err);
+                    });
+                }
+            }
+        }
+        
+        // Render phone messages in batches
+        function renderPhoneMessages(container, messages) {
+            // Show loading message
+            container.innerHTML = '<div class="info-message">Lade Nachrichten...</div>';
+            
+            // Process in batches to avoid freezing
+            const batchSize = 200; // Adjust batch size based on performance
+            const totalBatches = Math.ceil(messages.length / batchSize);
+            
+            loadingMessage.textContent = 'Lade Handy-Ansicht...';
+            loadingOverlay.style.display = 'flex';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Process batches
+            function processBatch(batchIndex) {
+                const startIdx = batchIndex * batchSize;
+                const endIdx = Math.min(startIdx + batchSize, messages.length);
+                
+                // Create document fragment for better performance
+                const fragment = document.createDocumentFragment();
+                
+                let currentDate = '';
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                    const message = messages[i];
+                    
+                    // Add date divider if it's a new date
+                    if (message.date !== currentDate) {
+                        currentDate = message.date;
+                        const dateDivider = document.createElement('div');
+                        dateDivider.className = 'phone-date-divider';
+                        dateDivider.innerHTML = `<span>${formatDate(currentDate)}</span>`;
+                        fragment.appendChild(dateDivider);
+                    }
+                    
+                    // Create message bubble
+                    const bubble = document.createElement('div');
+                    bubble.className = 'phone-chat-bubble';
+                    
+                    // Determine if it's from "me" (last participant in the list)
+                    const participantsArray = Array.from(participants);
+                    const isFromMe = message.sender === participantsArray[participantsArray.length - 1];
+                    bubble.classList.add(isFromMe ? 'phone-sent' : 'phone-received');
+                    
+                    // Add sender name if it's not from me and not in a one-on-one chat
+                    if (!isFromMe && message.sender !== 'System' && participantsArray.length > 2) {
+                        const senderElement = document.createElement('div');
+                        senderElement.className = 'phone-sender-name';
+                        senderElement.textContent = message.sender;
+                        bubble.appendChild(senderElement);
+                    }
+                    
+                    // Add message text
+                    const messageText = document.createElement('div');
+                    messageText.className = 'phone-message-text';
+                    messageText.textContent = message.text;
+                    bubble.appendChild(messageText);
+                    
+                    // Add message info (time)
+                    const messageInfo = document.createElement('div');
+                    messageInfo.className = 'phone-message-info';
+                    messageInfo.textContent = message.time;
+                    bubble.appendChild(messageInfo);
+                    
+                    fragment.appendChild(bubble);
+                }
+                
+                container.appendChild(fragment);
+                
+                // Update progress
+                const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
+                updateProgress(progress);
+                
+                if (batchIndex + 1 < totalBatches) {
+                    // Process next batch after a small delay
+                    setTimeout(() => processBatch(batchIndex + 1), 10);
+                } else {
+                    // All done, hide loading overlay
+                    loadingOverlay.style.display = 'none';
+                    
+                    // Scroll to bottom
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+            
+            // Start processing batches
+            setTimeout(() => processBatch(0), 50);
         }
         
         // Format date for display
