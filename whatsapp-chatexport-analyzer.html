@@ -687,8 +687,8 @@
             renderPagination();
             renderChatPage(currentPage);
             
-            // Analyze chat data
-            analyzeChat(chatMessages);
+            // Prepare basic analytics
+            preAnalyzeChat(chatMessages);
             
             loadingOverlay.style.display = 'none';
             chatPagination.style.display = 'block';
@@ -843,134 +843,243 @@
             renderChatPage(currentPage);
         }
         
-        // Analyze chat data - uses worker for heavy processing
-        function analyzeChat(messages) {
-            analyticsSection.innerHTML = '';
-            
+        // Preanalyze chat data - compute basic statistics only
+        function preAnalyzeChat(messages) {
             if (messages.length === 0) {
                 analyticsSection.innerHTML = '<div class="info-message">Keine Chat-Nachrichten für Analysen gefunden.</div>';
                 return;
             }
+            
+            // Prepare analytics section with placeholder
+            analyticsSection.innerHTML = `
+                <div class="analytics-card">
+                    <h3>Allgemeine Statistiken</h3>
+                    <div class="stat-row">
+                        <span>Gesamtzahl Nachrichten:</span>
+                        <span>${messages.length.toLocaleString()}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Anzahl Teilnehmer:</span>
+                        <span>${participants.size}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Erster Chat-Tag:</span>
+                        <span>${formatDate(messages[0].date)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Letzter Chat-Tag:</span>
+                        <span>${formatDate(messages[messages.length - 1].date)}</span>
+                    </div>
+                </div>
+                <div id="analytics-placeholder" class="info-message">
+                    <p>Klicke auf "Detaillierte Analyse starten", um weitere Analysen zu generieren.</p>
+                    <button id="start-analysis-btn" class="file-upload-label" style="display: inline-block; margin-top: 15px;">Detaillierte Analyse starten</button>
+                </div>
+            `;
+            
+            // Add event listener for analysis button
+            document.getElementById('start-analysis-btn').addEventListener('click', () => analyzeChat(messages));
+        }
+        
+        // Analyze chat data - uses worker for heavy processing
+        function analyzeChat(messages) {
+            // Remove placeholder
+            const placeholder = document.getElementById('analytics-placeholder');
+            if (placeholder) placeholder.remove();
             
             loadingMessage.textContent = 'Erstelle Analysen...';
             loadingOverlay.style.display = 'flex';
             progressBar.style.width = '0%';
             progressText.textContent = '0%';
             
-            // Use setTimeout to not block UI
-            setTimeout(() => {
-                // Basic stats
-                const totalMessages = messages.length;
-                const participantsArray = Array.from(participants);
-                
-                // Update progress
-                updateProgress(20);
-                
-                // Message count by sender
-                const messageCountBySender = {};
-                participantsArray.forEach(participant => {
-                    messageCountBySender[participant] = messages.filter(m => m.sender === participant).length;
-                });
-                
-                // Update progress
-                updateProgress(40);
-                
-                // Message count by date - group by same date
-                const messageCountByDate = {};
-                messages.forEach(message => {
-                    if (!messageCountByDate[message.date]) {
-                        messageCountByDate[message.date] = 0;
-                    }
-                    messageCountByDate[message.date]++;
-                });
-                
-                // Update progress
-                updateProgress(60);
-                
-                // Word frequency - optimized
-                const wordFrequency = {};
-                const stopWords = ['der', 'die', 'das', 'und', 'ist', 'in', 'zu', 'den', 'mit', 'auf', 'für', 'von', 'im', 'nicht', 'ein', 'eine', 'es', 'ich', 'du', 'wir', 'ihr', 'sie', 'er', 'dass', 'sich', 'auch', 'als', 'so', 'zum', 'wie', 'bei', 'nach', 'um', 'an', 'aus', 'aber', 'noch', 'nur'];
-                
-                // Process in chunks
-                const chunkSize = 1000;
-                let processedMessages = 0;
-                
-                function processWordChunk() {
-                    const endIdx = Math.min(processedMessages + chunkSize, messages.length);
-                    
-                    for (let i = processedMessages; i < endIdx; i++) {
-                        const message = messages[i];
-                        const words = message.text.toLowerCase()
-                            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-                            .split(/\s+/);
+            // Define analytics state object
+            const analyticsState = {
+                totalMessages: messages.length,
+                participantsArray: Array.from(participants),
+                messageCountBySender: {},
+                messageCountByDate: {},
+                wordFrequency: {},
+                messagesByHour: Array(24).fill(0),
+                messagesByDay: Array(7).fill(0),
+                stopWords: ['der', 'die', 'das', 'und', 'ist', 'in', 'zu', 'den', 'mit', 'auf', 'für', 'von', 'im', 'nicht', 'ein', 'eine', 'es', 'ich', 'du', 'wir', 'ihr', 'sie', 'er', 'dass', 'sich', 'auch', 'als', 'so', 'zum', 'wie', 'bei', 'nach', 'um', 'an', 'aus', 'aber', 'noch', 'nur']
+            };
+            
+            // Process analysis in sequential steps to avoid freezing
+            processAnalysisStep(0, messages, analyticsState);
+        }
+        
+        // Process analysis in steps to avoid freezing the browser
+        function processAnalysisStep(step, messages, state) {
+            try {
+                switch(step) {
+                    case 0: // Message count by sender
+                        updateProgress(10);
+                        loadingMessage.textContent = 'Analysiere Nachrichten pro Person...';
                         
-                        words.forEach(word => {
-                            if (word.length > 2 && !stopWords.includes(word)) {
-                                if (!wordFrequency[word]) {
-                                    wordFrequency[word] = 0;
-                                }
-                                wordFrequency[word]++;
+                        // Use a more efficient approach
+                        messages.forEach(message => {
+                            if (!state.messageCountBySender[message.sender]) {
+                                state.messageCountBySender[message.sender] = 0;
                             }
+                            state.messageCountBySender[message.sender]++;
                         });
-                    }
+                        
+                        setTimeout(() => processAnalysisStep(1, messages, state), 10);
+                        break;
+                        
+                    case 1: // Message count by date
+                        updateProgress(20);
+                        loadingMessage.textContent = 'Analysiere Aktivität über Zeit...';
+                        
+                        messages.forEach(message => {
+                            if (!state.messageCountByDate[message.date]) {
+                                state.messageCountByDate[message.date] = 0;
+                            }
+                            state.messageCountByDate[message.date]++;
+                        });
+                        
+                        setTimeout(() => processAnalysisStep(2, messages, state), 10);
+                        break;
+                        
+                    case 2: // Process word frequency in chunks
+                        updateProgress(30);
+                        loadingMessage.textContent = 'Analysiere häufigste Wörter (1/3)...';
+                        
+                        // Start processing words in chunks
+                        processWordChunks(0, 30, messages, state);
+                        break;
+                        
+                    case 3: // Messages by hour and day
+                        updateProgress(70);
+                        loadingMessage.textContent = 'Analysiere Aktivitätsmuster...';
+                        
+                        // Process in smaller chunks for large datasets
+                        const chunkSize = 10000;
+                        const chunks = Math.ceil(messages.length / chunkSize);
+                        
+                        function processTimeChunk(chunkIndex) {
+                            const start = chunkIndex * chunkSize;
+                            const end = Math.min(start + chunkSize, messages.length);
+                            
+                            for (let i = start; i < end; i++) {
+                                const message = messages[i];
+                                const date = new Date(message.datetime);
+                                const hour = date.getHours();
+                                const day = date.getDay();
+                                
+                                state.messagesByHour[hour]++;
+                                state.messagesByDay[day]++;
+                            }
+                            
+                            if (chunkIndex + 1 < chunks) {
+                                setTimeout(() => processTimeChunk(chunkIndex + 1), 0);
+                            } else {
+                                setTimeout(() => processAnalysisStep(4, messages, state), 10);
+                            }
+                        }
+                        
+                        processTimeChunk(0);
+                        break;
+                        
+                    case 4: // Render everything
+                        updateProgress(90);
+                        loadingMessage.textContent = 'Erstelle Visualisierungen...';
+                        
+                        // Sort word frequency
+                        const sortedWords = Object.entries(state.wordFrequency)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 50);
+                        
+                        // Render each component with small delays
+                        setTimeout(() => {
+                            renderMessageCountBySender(state.messageCountBySender);
+                            setTimeout(() => {
+                                renderWordFrequency(sortedWords, state.wordFrequency);
+                                setTimeout(() => {
+                                    renderActivityOverTime(state.messageCountByDate);
+                                    setTimeout(() => {
+                                        renderMessagesByHour(state.messagesByHour);
+                                        setTimeout(() => {
+                                            renderMessagesByDay(state.messagesByDay);
+                                            
+                                            updateProgress(100);
+                                            loadingOverlay.style.display = 'none';
+                                        }, 100);
+                                    }, 100);
+                                }, 100);
+                            }, 100);
+                        }, 100);
+                        break;
+                }
+            } catch (error) {
+                console.error('Fehler bei der Analyse:', error);
+                loadingOverlay.style.display = 'none';
+                
+                // Show error message
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'analytics-card';
+                errorMessage.innerHTML = `
+                    <h3>Fehler bei der Analyse</h3>
+                    <p>Es ist ein Fehler aufgetreten: ${error.message}</p>
+                    <p>Versuche es mit einer kleineren Chat-Datei oder kontaktiere den Support.</p>
+                `;
+                analyticsSection.appendChild(errorMessage);
+            }
+        }
+        
+        // Process word frequency in chunks to avoid UI freezes
+        function processWordChunks(startPercent, endPercent, messages, state) {
+            const chunkSize = 1000;
+            const totalChunks = Math.ceil(messages.length / chunkSize);
+            let currentChunk = 0;
+            
+            function processNextChunk() {
+                loadingMessage.textContent = `Analysiere häufigste Wörter (${Math.min(currentChunk+1, totalChunks)}/${totalChunks})...`;
+                
+                const startIdx = currentChunk * chunkSize;
+                const endIdx = Math.min(startIdx + chunkSize, messages.length);
+                
+                // Process this chunk
+                for (let i = startIdx; i < endIdx; i++) {
+                    // Only process every nth message for very large chats to improve performance
+                    if (messages.length > 50000 && i % 3 !== 0) continue;
                     
-                    processedMessages = endIdx;
-                    const progress = 60 + Math.round((processedMessages / messages.length) * 20);
-                    updateProgress(progress);
+                    const message = messages[i];
+                    const words = message.text.toLowerCase()
+                        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                        .split(/\s+/);
                     
-                    if (processedMessages < messages.length) {
-                        setTimeout(processWordChunk, 0);
-                    } else {
-                        // Word frequency analysis complete
-                        finishAnalysis();
-                    }
+                    // Limit words per message to avoid processing very long messages
+                    const maxWordsPerMessage = 100;
+                    const wordsToProcess = words.length <= maxWordsPerMessage ? words : words.slice(0, maxWordsPerMessage);
+                    
+                    wordsToProcess.forEach(word => {
+                        if (word.length > 2 && !state.stopWords.includes(word)) {
+                            if (!state.wordFrequency[word]) {
+                                state.wordFrequency[word] = 0;
+                            }
+                            state.wordFrequency[word]++;
+                        }
+                    });
                 }
                 
-                // Start processing words
-                processWordChunk();
+                currentChunk++;
                 
-                function finishAnalysis() {
-                    // Sort word frequency
-                    const sortedWords = Object.entries(wordFrequency)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 50);
-                    
-                    // Messages by hour of day
-                    const messagesByHour = Array(24).fill(0);
-                    messages.forEach(message => {
-                        // Use the datetime directly
-                        const date = new Date(message.datetime);
-                        const hour = date.getHours();
-                        messagesByHour[hour]++;
-                    });
-                    
-                    // Messages by day of week
-                    const messagesByDay = Array(7).fill(0);
-                    messages.forEach(message => {
-                        // Use the datetime directly
-                        const date = new Date(message.datetime);
-                        const day = date.getDay();
-                        messagesByDay[day]++;
-                    });
-                    
-                    updateProgress(90);
-                    
-                    // Render analytics
-                    renderBasicStats(totalMessages, participantsArray.length);
-                    renderMessageCountBySender(messageCountBySender);
-                    renderWordFrequency(sortedWords);
-                    renderActivityOverTime(messageCountByDate);
-                    renderMessagesByHour(messagesByHour);
-                    renderMessagesByDay(messagesByDay);
-                    
-                    updateProgress(100);
-                    
-                    // Hide loading overlay
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 300);
+                // Update progress
+                const progress = startPercent + Math.floor((currentChunk / totalChunks) * (endPercent - startPercent));
+                updateProgress(progress);
+                
+                if (currentChunk < totalChunks) {
+                    // Process next chunk after a small delay
+                    setTimeout(processNextChunk, 0);
+                } else {
+                    // Move to next analysis step
+                    setTimeout(() => processAnalysisStep(3, messages, state), 10);
                 }
-            }, 50);
+            }
+            
+            // Start processing
+            processNextChunk();
         }
         
         // Render basic statistics
@@ -1065,61 +1174,21 @@
         }
         
         // Render word frequency with optimized rendering
-        function renderWordFrequency(wordFrequency) {
+        function renderWordFrequency(wordFrequency, fullWordFrequency) {
             const card = document.createElement('div');
             card.className = 'analytics-card';
             card.innerHTML = `
                 <h3>Häufigste Wörter</h3>
-                <div class="word-cloud-container" id="word-cloud"></div>
+                <div class="top-words-container"></div>
             `;
             
             analyticsSection.appendChild(card);
             
-            // Create word cloud with fewer words for better performance
-            const wordCloudData = wordFrequency.slice(0, 100).map(([word, count]) => ({
-                text: word,
-                size: Math.max(10, Math.min(60, count * 3)) // Scale size
-            }));
+            // Add top 20 list (simpler, faster than word cloud)
+            const topWordsContainer = card.querySelector('.top-words-container');
             
-            // Render word cloud in a smaller size for better performance
-            const width = Math.min(document.getElementById('word-cloud').offsetWidth, 500);
-            const height = 250;
-            
-            const layout = d3.layout.cloud()
-                .size([width, height])
-                .words(wordCloudData)
-                .padding(2)
-                .rotate(() => ~~(Math.random() * 2) * 90)
-                .font('Impact')
-                .fontSize(d => d.size)
-                .on('end', draw);
-                
-            layout.start();
-            
-            function draw(words) {
-                d3.select('#word-cloud').append('svg')
-                    .attr('width', layout.size()[0])
-                    .attr('height', layout.size()[1])
-                    .append('g')
-                    .attr('transform', `translate(${layout.size()[0] / 2},${layout.size()[1] / 2})`)
-                    .selectAll('text')
-                    .data(words)
-                    .enter().append('text')
-                    .style('font-size', d => `${d.size}px`)
-                    .style('font-family', 'Impact')
-                    .style('fill', (d, i) => d3.schemeCategory10[i % 10])
-                    .attr('text-anchor', 'middle')
-                    .attr('transform', d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
-                    .text(d => d.text);
-            }
-            
-            // Add top 10 list
-            const topWordsContainer = document.createElement('div');
-            topWordsContainer.style.marginTop = '20px';
-            card.appendChild(topWordsContainer);
-            
-            const top10Words = wordFrequency.slice(0, 10);
-            top10Words.forEach(([word, count], index) => {
+            const top20Words = wordFrequency.slice(0, 20);
+            top20Words.forEach(([word, count], index) => {
                 const row = document.createElement('div');
                 row.className = 'stat-row';
                 row.innerHTML = `
@@ -1128,6 +1197,75 @@
                 `;
                 topWordsContainer.appendChild(row);
             });
+            
+            // Add a "Show Word Cloud" button instead of rendering directly
+            const wordCloudButton = document.createElement('button');
+            wordCloudButton.className = 'file-upload-label';
+            wordCloudButton.style.marginTop = '20px';
+            wordCloudButton.textContent = 'Word Cloud anzeigen';
+            wordCloudButton.addEventListener('click', () => {
+                // Replace button with word cloud
+                wordCloudButton.remove();
+                
+                // Add container for word cloud
+                const wordCloudContainer = document.createElement('div');
+                wordCloudContainer.id = 'word-cloud';
+                wordCloudContainer.className = 'word-cloud-container';
+                wordCloudContainer.style.height = '250px';
+                wordCloudContainer.style.marginTop = '20px';
+                card.appendChild(wordCloudContainer);
+                
+                // Create word cloud with fewer words for better performance
+                // Limit to only 50 words for better performance
+                const wordCloudData = wordFrequency.slice(0, 50).map(([word, count]) => ({
+                    text: word,
+                    size: Math.max(10, Math.min(40, count * 2)) // Scale size down for performance
+                }));
+                
+                // Render word cloud in a smaller size for better performance
+                const width = Math.min(document.getElementById('word-cloud').offsetWidth, 400);
+                const height = 200;
+                
+                try {
+                    const layout = d3.layout.cloud()
+                        .size([width, height])
+                        .words(wordCloudData)
+                        .padding(2)
+                        .rotate(() => ~~(Math.random() * 2) * 90)
+                        .font('Impact')
+                        .fontSize(d => d.size)
+                        .on('end', draw);
+                        
+                    layout.start();
+                } catch (error) {
+                    console.error('Fehler beim Erstellen der Word Cloud:', error);
+                    wordCloudContainer.innerHTML = '<p>Word Cloud konnte nicht erstellt werden.</p>';
+                }
+                
+                function draw(words) {
+                    try {
+                        d3.select('#word-cloud').append('svg')
+                            .attr('width', layout.size()[0])
+                            .attr('height', layout.size()[1])
+                            .append('g')
+                            .attr('transform', `translate(${layout.size()[0] / 2},${layout.size()[1] / 2})`)
+                            .selectAll('text')
+                            .data(words)
+                            .enter().append('text')
+                            .style('font-size', d => `${d.size}px`)
+                            .style('font-family', 'Impact')
+                            .style('fill', (d, i) => d3.schemeCategory10[i % 10])
+                            .attr('text-anchor', 'middle')
+                            .attr('transform', d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+                            .text(d => d.text);
+                    } catch (error) {
+                        console.error('Fehler beim Zeichnen der Word Cloud:', error);
+                        wordCloudContainer.innerHTML = '<p>Word Cloud konnte nicht gezeichnet werden.</p>';
+                    }
+                }
+            });
+            
+            card.appendChild(wordCloudButton);
         }
         
         // Render activity over time with performance optimization
@@ -1138,29 +1276,86 @@
             
             analyticsSection.appendChild(card);
             
-            // Create chart
+            try {
+                // Get sorted dates
+                const dates = Object.keys(messageCountByDate).sort();
+                
+                // If we have a lot of dates, just show summary stats first
+                if (dates.length > 50) {
+                    // Create summary stats
+                    const summaryContainer = document.createElement('div');
+                    
+                    // Find peak date
+                    let peakDate = dates[0];
+                    let peakCount = messageCountByDate[peakDate];
+                    
+                    dates.forEach(date => {
+                        if (messageCountByDate[date] > peakCount) {
+                            peakCount = messageCountByDate[date];
+                            peakDate = date;
+                        }
+                    });
+                    
+                    // Calculate average messages per day
+                    const totalMessages = Object.values(messageCountByDate).reduce((sum, count) => sum + count, 0);
+                    const avgMessagesPerDay = Math.round(totalMessages / dates.length);
+                    
+                    // Display summary
+                    summaryContainer.innerHTML = `
+                        <div class="stat-row">
+                            <span>Tage mit Nachrichten:</span>
+                            <span>${dates.length}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Durchschnittliche Nachrichten pro Tag:</span>
+                            <span>${avgMessagesPerDay}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Tag mit den meisten Nachrichten:</span>
+                            <span>${formatDate(peakDate)} (${peakCount} Nachrichten)</span>
+                        </div>
+                    `;
+                    
+                    card.appendChild(summaryContainer);
+                    
+                    // Add button to show chart
+                    const showChartButton = document.createElement('button');
+                    showChartButton.className = 'file-upload-label';
+                    showChartButton.style.marginTop = '15px';
+                    showChartButton.textContent = 'Diagramm anzeigen';
+                    showChartButton.addEventListener('click', () => {
+                        showChartButton.remove();
+                        renderActivityChart(card, dates, messageCountByDate);
+                    });
+                    
+                    card.appendChild(showChartButton);
+                } else {
+                    // Directly render chart for smaller datasets
+                    renderActivityChart(card, dates, messageCountByDate);
+                }
+            } catch (error) {
+                console.error('Fehler beim Erstellen des Aktivitätsdiagramms:', error);
+                card.innerHTML += '<p>Aktivitätsdiagramm konnte nicht erstellt werden.</p>';
+            }
+        }
+        
+        // Helper function to render activity chart
+        function renderActivityChart(container, dates, messageCountByDate) {
+            // Create chart container
             const chartContainer = document.createElement('div');
             chartContainer.className = 'chart-container';
             chartContainer.style.height = '250px';
-            card.appendChild(chartContainer);
+            container.appendChild(chartContainer);
             
             const canvas = document.createElement('canvas');
             chartContainer.appendChild(canvas);
             
-            // Get sorted dates
-            const dates = Object.keys(messageCountByDate).sort();
-            
-            // If we have too many dates, sample them to avoid performance issues
+            // Sample data for better performance
             let sampledDates = dates;
             let sampledCounts = [];
             
-            if (dates.length > 100) {
-                // Sample to approximately 100 points
-                const sampleRate = Math.floor(dates.length / 100);
-                sampledDates = [];
-                sampledCounts = [];
-                
-                // Group dates by week or month
+            if (dates.length > 60) {
+                // Group dates by month for better visualization
                 const groupedDates = {};
                 
                 dates.forEach(date => {
@@ -1182,48 +1377,56 @@
                 sampledCounts = dates.map(date => messageCountByDate[date]);
             }
             
-            const ctx = canvas.getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: sampledDates.map(date => {
-                        // If grouped by month, just return that
-                        if (date.split('.').length === 2) {
-                            return date;
-                        }
-                        // Otherwise, format individual dates
-                        const parts = date.split('.');
-                        return `${parts[0]}.${parts[1]}`;
-                    }),
-                    datasets: [{
-                        label: 'Nachrichten',
-                        data: sampledCounts,
-                        borderColor: 'rgba(18, 140, 126, 1)',
-                        backgroundColor: 'rgba(18, 140, 126, 0.1)',
-                        fill: true,
-                        tension: 0.1,
-                        pointRadius: dates.length > 50 ? 0 : 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        },
-                        x: {
-                            ticks: {
-                                maxTicksLimit: 12,
-                                maxRotation: 45,
-                                minRotation: 45
+            try {
+                const ctx = canvas.getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sampledDates.map(date => {
+                            // If grouped by month, just return that
+                            if (date.split('.').length === 2) {
+                                return date;
                             }
+                            // Otherwise, format individual dates
+                            const parts = date.split('.');
+                            return `${parts[0]}.${parts[1]}`;
+                        }),
+                        datasets: [{
+                            label: 'Nachrichten',
+                            data: sampledCounts,
+                            borderColor: 'rgba(18, 140, 126, 1)',
+                            backgroundColor: 'rgba(18, 140, 126, 0.1)',
+                            fill: true,
+                            tension: 0.1,
+                            pointRadius: sampledDates.length > 30 ? 0 : 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            },
+                            x: {
+                                ticks: {
+                                    maxTicksLimit: 10,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 500
                         }
                     }
-                }
-            });
-            
-            charts.activityLine = chart;
+                });
+                
+                charts.activityLine = chart;
+            } catch (error) {
+                console.error('Fehler beim Erstellen des Aktivitätsdiagramms:', error);
+                container.innerHTML += '<p>Aktivitätsdiagramm konnte nicht erstellt werden.</p>';
+            }
         }
         
         // Render messages by hour
