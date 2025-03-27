@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Export Scanner</title>
+    <style>
+        :root {
+            --whatsapp-green: #128C7E;
+            --whatsapp-light-green: #25D366;
+            --whatsapp-bg: #E5DDD5;
+            --whatsapp-chat-bg: #DCF8C6;
+            --whatsapp-received: #FFFFFF;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: var(--whatsapp-green);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .upload-section {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .file-upload {
+            display: inline-block;
+            margin: 15px 0;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 12px 24px;
+            background-color: var(--whatsapp-green);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .file-upload-label:hover {
+            background-color: var(--whatsapp-light-green);
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 30px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab-buttons button {
+            padding: 10px 15px;
+            margin-right: 5px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .tab-buttons button.active {
+            color: var(--whatsapp-green);
+            border-bottom-color: var(--whatsapp-green);
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-bar input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .content-section {
+            display: flex;
+            height: 600px;
+        }
+        
+        .chat-section {
+            flex: 1;
+            background-color: var(--whatsapp-bg);
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .analytics-section {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .active-section {
+            display: block;
+        }
+        
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 7.5px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .chat-sent {
+            background-color: var(--whatsapp-chat-bg);
+            margin-left: auto;
+            border-top-right-radius: 0;
+        }
+        
+        .chat-received {
+            background-color: var(--whatsapp-received);
+            margin-right: auto;
+            border-top-left-radius: 0;
+        }
+        
+        .message-info {
+            font-size: 0.7rem;
+            color: #555;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .sender-name {
+            font-weight: bold;
+            color: #303030;
+            margin-bottom: 3px;
+        }
+        
+        .analytics-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .analytics-card h3 {
+            color: var(--whatsapp-green);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--whatsapp-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .word-cloud-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            margin-top: 20px;
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .date-divider span {
+            background-color: #e1f3fb;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        .info-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .content-section {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .chat-section, .analytics-section {
+                height: 500px;
+            }
+            
+            .chat-bubble {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WhatsApp Chat Export Scanner</h1>
+            <p>Lade deinen exportierten WhatsApp-Chat hoch und entdecke interessante Analysen</p>
+        </header>
+        
+        <div class="upload-section">
+            <p>Exportiere deinen WhatsApp-Chat (ohne Medien) und lade die Textdatei hier hoch:</p>
+            <div class="file-upload">
+                <label for="chat-file" class="file-upload-label">
+                    <span>Chat-Datei auswählen</span>
+                </label>
+                <input type="file" id="chat-file" class="file-upload-input" accept=".txt">
+            </div>
+            <p class="file-info"></p>
+        </div>
+        
+        <div class="control-panel">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-target="chat">Chat anzeigen</button>
+                <button class="tab-btn" data-target="analytics">Analysen</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Suche im Chat..." id="search-input">
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="chat-section active-section" id="chat-section">
+                <div class="info-message">Bitte lade eine WhatsApp-Chat-Datei hoch, um den Chatverlauf anzuzeigen.</div>
+            </div>
+            
+            <div class="analytics-section" id="analytics-section">
+                <div class="info-message">Bitte lade eine WhatsApp-Chat-Datei hoch, um Analysen anzuzeigen.</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+
+    <script>
+        // Global variables
+        let chatMessages = [];
+        let participants = new Set();
+        let messageStats = {};
+        let wordStats = {};
+        let charts = {};
+
+        // DOM elements
+        const fileInput = document.getElementById('chat-file');
+        const fileInfo = document.querySelector('.file-info');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const chatSection = document.getElementById('chat-section');
+        const analyticsSection = document.getElementById('analytics-section');
+        const searchInput = document.getElementById('search-input');
+        const loadingOverlay = document.querySelector('.loading-overlay');
+
+        // Event listeners
+        fileInput.addEventListener('change', handleFileUpload);
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', switchTab);
+        });
+        searchInput.addEventListener('input', searchChat);
+
+        // Switch between tabs
+        function switchTab(e) {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            e.target.classList.add('active');
+            
+            // Hide all sections
+            chatSection.classList.remove('active-section');
+            analyticsSection.classList.remove('active-section');
+            
+            // Show selected section
+            const targetSection = e.target.getAttribute('data-target');
+            if (targetSection === 'chat') {
+                chatSection.classList.add('active-section');
+            } else if (targetSection === 'analytics') {
+                analyticsSection.classList.add('active-section');
+            }
+        }
+
+        // Handle file upload
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            fileInfo.textContent = `Ausgewählte Datei: ${file.name}`;
+            loadingOverlay.style.display = 'flex';
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const content = event.target.result;
+                parseWhatsAppChat(content);
+            };
+            reader.readAsText(file);
+        }
+
+        // Parse WhatsApp chat export
+        function parseWhatsAppChat(content) {
+            // Reset data
+            chatMessages = [];
+            participants = new Set();
+            
+            // Split by new lines
+            const lines = content.split('\n');
+            
+            // Pattern to match WhatsApp messages
+            // [DD.MM.YY, HH:mm:ss] Name: Message
+            const messagePattern = /^\[(\d{2}\.\d{2}\.\d{2}),\s(\d{1,2}:\d{2}(?::\d{2})?)](?:\s(.+?):\s(.+)|(.+))/;
+            
+            let currentDate = '';
+            let messageBuffer = '';
+            let currentMessage = null;
+            
+            // Process each line
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const match = messagePattern.exec(line);
+                
+                if (match) {
+                    // If we have a message in the buffer, save it
+                    if (currentMessage) {
+                        currentMessage.text = messageBuffer.trim();
+                        chatMessages.push(currentMessage);
+                        messageBuffer = '';
+                    }
+                    
+                    // Extract date, time, sender and message
+                    const date = match[1];
+                    const time = match[2];
+                    const sender = match[3] || 'System';
+                    const messageText = match[4] || match[5] || '';
+                    
+                    // Format date for comparison
+                    if (date !== currentDate) {
+                        currentDate = date;
+                    }
+                    
+                    // Create new message object
+                    currentMessage = {
+                        date: date,
+                        time: time,
+                        sender: sender,
+                        text: messageText,
+                        datetime: parseDateTime(date, time)
+                    };
+                    
+                    // Add sender to participants set (excluding system messages)
+                    if (sender !== 'System') {
+                        participants.add(sender);
+                    }
+                    
+                    // Start buffer with current message
+                    messageBuffer = messageText;
+                } else {
+                    // If no match, it's a continuation of the previous message
+                    messageBuffer += '\n' + line;
+                }
+            }
+            
+            // Add the last message if any
+            if (currentMessage) {
+                currentMessage.text = messageBuffer.trim();
+                chatMessages.push(currentMessage);
+            }
+            
+            // Render chat and analytics
+            renderChat(chatMessages);
+            analyzeChat(chatMessages);
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Parse date and time to Date object
+        function parseDateTime(dateStr, timeStr) {
+            // Format: DD.MM.YY, HH:mm:ss
+            const parts = dateStr.split('.');
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
+            const year = 2000 + parseInt(parts[2], 10); // assuming 20xx
+            
+            const timeParts = timeStr.split(':');
+            const hour = parseInt(timeParts[0], 10);
+            const minute = parseInt(timeParts[1], 10);
+            const second = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
+            
+            return new Date(year, month, day, hour, minute, second);
+        }
+
+        // Format date for display
+        function formatDate(dateStr) {
+            const parts = dateStr.split('.');
+            const day = parts[0];
+            const month = parts[1];
+            const year = '20' + parts[2];
+            
+            // Create a date object to get day name
+            const date = new Date(year, month - 1, day);
+            const dayName = date.toLocaleDateString('de-DE', { weekday: 'long' });
+            
+            return `${dayName}, ${day}.${month}.${year}`;
+        }
+
+        // Render chat messages
+        function renderChat(messages) {
+            chatSection.innerHTML = '';
+            
+            if (messages.length === 0) {
+                chatSection.innerHTML = '<div class="info-message">Keine Chat-Nachrichten gefunden.</div>';
+                return;
+            }
+            
+            let currentDate = '';
+            
+            messages.forEach(message => {
+                // Add date divider if it's a new date
+                if (message.date !== currentDate) {
+                    currentDate = message.date;
+                    const dateDivider = document.createElement('div');
+                    dateDivider.className = 'date-divider';
+                    dateDivider.innerHTML = `<span>${formatDate(currentDate)}</span>`;
+                    chatSection.appendChild(dateDivider);
+                }
+                
+                // Create message bubble
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-bubble';
+                
+                // Determine if it's from "me" (last participant in the list)
+                const participantsArray = Array.from(participants);
+                const isFromMe = message.sender === participantsArray[participantsArray.length - 1];
+                bubble.classList.add(isFromMe ? 'chat-sent' : 'chat-received');
+                
+                // Add sender name if it's not from me
+                if (!isFromMe && message.sender !== 'System') {
+                    const senderElement = document.createElement('div');
+                    senderElement.className = 'sender-name';
+                    senderElement.textContent = message.sender;
+                    bubble.appendChild(senderElement);
+                }
+                
+                // Add message text
+                const messageText = document.createElement('div');
+                messageText.className = 'message-text';
+                messageText.textContent = message.text;
+                bubble.appendChild(messageText);
+                
+                // Add message info (time)
+                const messageInfo = document.createElement('div');
+                messageInfo.className = 'message-info';
+                messageInfo.textContent = message.time;
+                bubble.appendChild(messageInfo);
+                
+                chatSection.appendChild(bubble);
+            });
+            
+            // Scroll to bottom
+            chatSection.scrollTop = chatSection.scrollHeight;
+        }
+
+        // Search chat messages
+        function searchChat() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            if (!searchTerm) {
+                renderChat(chatMessages);
+                return;
+            }
+            
+            const filteredMessages = chatMessages.filter(message => 
+                message.text.toLowerCase().includes(searchTerm) || 
+                message.sender.toLowerCase().includes(searchTerm)
+            );
+            
+            renderChat(filteredMessages);
+        }
+
+        // Analyze chat data
+        function analyzeChat(messages) {
+            analyticsSection.innerHTML = '';
+            
+            if (messages.length === 0) {
+                analyticsSection.innerHTML = '<div class="info-message">Keine Chat-Nachrichten für Analysen gefunden.</div>';
+                return;
+            }
+            
+            // Basic stats
+            const totalMessages = messages.length;
+            const participantsArray = Array.from(participants);
+            
+            // Message count by sender
+            const messageCountBySender = {};
+            participantsArray.forEach(participant => {
+                messageCountBySender[participant] = messages.filter(m => m.sender === participant).length;
+            });
+            
+            // Message count by date
+            const messageCountByDate = {};
+            messages.forEach(message => {
+                if (!messageCountByDate[message.date]) {
+                    messageCountByDate[message.date] = 0;
+                }
+                messageCountByDate[message.date]++;
+            });
+            
+            // Word frequency
+            const wordFrequency = {};
+            const stopWords = ['der', 'die', 'das', 'und', 'ist', 'in', 'zu', 'den', 'mit', 'auf', 'für', 'von', 'im', 'nicht', 'ein', 'eine', 'es', 'ich', 'du', 'wir', 'ihr', 'sie', 'er', 'dass', 'sich', 'auch', 'als', 'so', 'zum', 'wie', 'bei', 'nach', 'um', 'an', 'aus', 'aber', 'noch', 'nur'];
+            
+            messages.forEach(message => {
+                const words = message.text.toLowerCase()
+                    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+                    .split(/\s+/);
+                
+                words.forEach(word => {
+                    if (word.length > 2 && !stopWords.includes(word)) {
+                        if (!wordFrequency[word]) {
+                            wordFrequency[word] = 0;
+                        }
+                        wordFrequency[word]++;
+                    }
+                });
+            });
+            
+            // Sort word frequency
+            const sortedWords = Object.entries(wordFrequency)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 50);
+            
+            // Messages by hour of day
+            const messagesByHour = Array(24).fill(0);
+            messages.forEach(message => {
+                const hour = message.datetime.getHours();
+                messagesByHour[hour]++;
+            });
+            
+            // Messages by day of week
+            const messagesByDay = Array(7).fill(0);
+            messages.forEach(message => {
+                const day = message.datetime.getDay();
+                messagesByDay[day]++;
+            });
+            
+            // Render analytics
+            renderBasicStats(totalMessages, participantsArray.length);
+            renderMessageCountBySender(messageCountBySender);
+            renderWordFrequency(sortedWords);
+            renderActivityOverTime(messageCountByDate);
+            renderMessagesByHour(messagesByHour);
+            renderMessagesByDay(messagesByDay);
+        }
+
+        // Render basic statistics
+        function renderBasicStats(totalMessages, participantCount) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `
+                <h3>Allgemeine Statistiken</h3>
+                <div class="stat-row">
+                    <span>Gesamtzahl Nachrichten:</span>
+                    <span>${totalMessages}</span>
+                </div>
+                <div class="stat-row">
+                    <span>Anzahl Teilnehmer:</span>
+                    <span>${participantCount}</span>
+                </div>
+                <div class="stat-row">
+                    <span>Erster Chat-Tag:</span>
+                    <span>${formatDate(chatMessages[0].date)}</span>
+                </div>
+                <div class="stat-row">
+                    <span>Letzter Chat-Tag:</span>
+                    <span>${formatDate(chatMessages[chatMessages.length - 1].date)}</span>
+                </div>
+            `;
+            analyticsSection.appendChild(card);
+        }
+
+        // Render message count by sender
+        function renderMessageCountBySender(messageCountBySender) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `<h3>Nachrichten pro Person</h3>`;
+            
+            const entries = Object.entries(messageCountBySender)
+                .sort((a, b) => b[1] - a[1]);
+            
+            entries.forEach(([sender, count]) => {
+                const row = document.createElement('div');
+                row.className = 'stat-row';
+                row.innerHTML = `
+                    <span>${sender}:</span>
+                    <span>${count} (${Math.round(count / chatMessages.length * 100)}%)</span>
+                `;
+                card.appendChild(row);
+            });
+            
+            analyticsSection.appendChild(card);
+            
+            // Create chart
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            chartContainer.style.height = '250px';
+            card.appendChild(chartContainer);
+            
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: entries.map(entry => entry[0]),
+                    datasets: [{
+                        data: entries.map(entry => entry[1]),
+                        backgroundColor: generateColors(entries.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            charts.senderPie = chart;
+        }
+
+        // Render word frequency
+        function renderWordFrequency(wordFrequency) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `
+                <h3>Häufigste Wörter</h3>
+                <div class="word-cloud-container" id="word-cloud"></div>
+            `;
+            
+            analyticsSection.appendChild(card);
+            
+            // Create word cloud
+            const wordCloudData = wordFrequency.map(([word, count]) => ({
+                text: word,
+                size: Math.max(10, Math.min(60, count * 3))
+            }));
+            
+            const width = document.getElementById('word-cloud').offsetWidth;
+            const height = 300;
+            
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(wordCloudData)
+                .padding(5)
+                .rotate(() => ~~(Math.random() * 2) * 90)
+                .font('Impact')
+                .fontSize(d => d.size)
+                .on('end', draw);
+                
+            layout.start();
+            
+            function draw(words) {
+                d3.select('#word-cloud').append('svg')
+                    .attr('width', layout.size()[0])
+                    .attr('height', layout.size()[1])
+                    .append('g')
+                    .attr('transform', `translate(${layout.size()[0] / 2},${layout.size()[1] / 2})`)
+                    .selectAll('text')
+                    .data(words)
+                    .enter().append('text')
+                    .style('font-size', d => `${d.size}px`)
+                    .style('font-family', 'Impact')
+                    .style('fill', (d, i) => d3.schemeCategory10[i % 10])
+                    .attr('text-anchor', 'middle')
+                    .attr('transform', d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+                    .text(d => d.text);
+            }
+            
+            // Add top 10 list
+            const topWordsContainer = document.createElement('div');
+            topWordsContainer.style.marginTop = '20px';
+            card.appendChild(topWordsContainer);
+            
+            const top10Words = wordFrequency.slice(0, 10);
+            top10Words.forEach(([word, count], index) => {
+                const row = document.createElement('div');
+                row.className = 'stat-row';
+                row.innerHTML = `
+                    <span>${index + 1}. ${word}</span>
+                    <span>${count}x</span>
+                `;
+                topWordsContainer.appendChild(row);
+            });
+        }
+
+        // Render activity over time
+        function renderActivityOverTime(messageCountByDate) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `<h3>Aktivität über Zeit</h3>`;
+            
+            analyticsSection.appendChild(card);
+            
+            // Create chart
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            chartContainer.style.height = '250px';
+            card.appendChild(chartContainer);
+            
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+            
+            const dates = Object.keys(messageCountByDate).sort();
+            const counts = dates.map(date => messageCountByDate[date]);
+            
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(date => {
+                        const parts = date.split('.');
+                        return `${parts[0]}.${parts[1]}`;
+                    }),
+                    datasets: [{
+                        label: 'Nachrichten',
+                        data: counts,
+                        borderColor: 'rgba(18, 140, 126, 1)',
+                        backgroundColor: 'rgba(18, 140, 126, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            ticks: {
+                                maxTicksLimit: 10
+                            }
+                        }
+                    }
+                }
+            });
+            
+            charts.activityLine = chart;
+        }
+
+        // Render messages by hour
+        function renderMessagesByHour(messagesByHour) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `<h3>Aktivität nach Stunde</h3>`;
+            
+            analyticsSection.appendChild(card);
+            
+            // Create chart
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            chartContainer.style.height = '250px';
+            card.appendChild(chartContainer);
+            
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+            
+            const hourLabels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+            
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hourLabels,
+                    datasets: [{
+                        label: 'Nachrichten',
+                        data: messagesByHour,
+                        backgroundColor: 'rgba(18, 140, 126, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            charts.hourBar = chart;
+        }
+
+        // Render messages by day of week
+        function renderMessagesByDay(messagesByDay) {
+            const card = document.createElement('div');
+            card.className = 'analytics-card';
+            card.innerHTML = `<h3>Aktivität nach Wochentag</h3>`;
+            
+            analyticsSection.appendChild(card);
+            
+            // Create chart
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            chartContainer.style.height = '250px';
+            card.appendChild(chartContainer);
+            
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+            
+            const dayLabels = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+            
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dayLabels,
+                    datasets: [{
+                        label: 'Nachrichten',
+                        data: messagesByDay,
+                        backgroundColor: 'rgba(18, 140, 126, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            charts.dayBar = chart;
+        }
+
+        // Generate colors for charts
+        function generateColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = (i * 137) % 360;
+                colors.push(`hsla(${hue}, 70%, 60%, 0.7)`);
+            }
+            return colors;
+        }
+    </script>
+</body>
+</html>
