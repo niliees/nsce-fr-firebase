@@ -271,37 +271,183 @@
             color: #666;
         }
 
-        /* Phone View Styles */
+        /* Phone View Styles - Realistic Version */
         .phone-container {
             max-width: 360px;
-            height: 600px;
+            height: 720px;
             margin: 0 auto;
-            border: 12px solid #000;
-            border-radius: 30px;
+            border: 12px solid #111;
+            border-radius: 40px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             background-color: #f0f0f0;
             position: relative;
             transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background-color: #000;
+        }
+        
+        /* Notch design */
+        .phone-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background-color: #111;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            z-index: 10;
+        }
+        
+        /* Front camera */
+        .phone-container::after {
+            content: "";
+            position: absolute;
+            top: 13px;
+            right: 75px;
+            width: 10px;
+            height: 10px;
+            background-color: #2a2a2a;
+            border-radius: 50%;
+            z-index: 11;
+            box-shadow: 0 0 0 2px rgba(60, 60, 60, 0.5);
+        }
+        
+        /* Side buttons */
+        .volume-buttons {
+            position: absolute;
+            left: -14px;
+            top: 120px;
+            width: 2px;
+            height: 70px;
+            z-index: 10;
+        }
+        
+        .volume-up, .volume-down {
+            width: 4px;
+            height: 30px;
+            background-color: #222;
+            position: absolute;
+            border-top-left-radius: 2px;
+            border-bottom-left-radius: 2px;
+            left: 0;
+        }
+        
+        .volume-up {
+            top: 0;
+        }
+        
+        .volume-down {
+            bottom: 0;
+        }
+        
+        .power-button {
+            position: absolute;
+            right: -14px;
+            top: 150px;
+            width: 4px;
+            height: 40px;
+            background-color: #222;
+            border-top-right-radius: 2px;
+            border-bottom-right-radius: 2px;
+            z-index: 10;
         }
         
         .phone-container.fullscreen {
             max-width: 100%;
             height: 100%;
-            border-radius: 0;
             border: none;
+            border-radius: 0;
         }
         
+        .phone-container.fullscreen::before,
+        .phone-container.fullscreen::after,
+        .phone-container.fullscreen .volume-buttons,
+        .phone-container.fullscreen .power-button {
+            display: none;
+        }
+        
+        .phone-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            overflow: hidden;
+            position: relative;
+            margin: 1px;
+        }
+        
+        /* Status bar */
+        .status-bar {
+            height: 28px;
+            background-color: #075E54;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 12px;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .status-bar-time {
+            font-weight: bold;
+        }
+        
+        .status-bar-icons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-bar-icons span {
+            margin-left: 6px;
+        }
+        
+        /* WhatsApp header */
         .phone-header {
             background-color: #075E54;
             color: white;
-            padding: 10px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
             height: 60px;
             flex-shrink: 0;
             position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .phone-header-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .phone-header-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .phone-header-action {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .phone-header-action:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         .phone-header-title {
@@ -310,37 +456,51 @@
             font-weight: bold;
         }
         
+        .phone-header-subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 2px;
+        }
+        
         .phone-back {
             color: white;
             font-size: 20px;
-            margin-right: 5px;
-            cursor: pointer;
-        }
-        
-        .phone-fullscreen-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            margin-right: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .phone-back:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .phone-fullscreen-toggle {
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
         }
         
         .phone-fullscreen-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         .phone-avatar {
             width: 40px;
             height: 40px;
-            background-color: #ccc;
+            background-color: #128C7E;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -348,14 +508,16 @@
             color: white;
             font-weight: bold;
             margin-right: 10px;
+            flex-shrink: 0;
         }
         
         .phone-chat-container {
             flex-grow: 1;
             overflow-y: auto;
             background-color: #E5DDD5;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAQAAACROWYpAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQfiARMQDwRaCt24AAAAgUlEQVQ4y+2UMQ6AIAxFX4g3cgAn138m5gLGhHAJB2Ui6FTaDoal/l1S8tL+lhTUUoiJKOFNmFTAa/yAx//+KCUH7vQJRVN917rLsoJZCSjPzxqw1dRQWi1LXXHmyhsrfrA+zIYP9oFOhbdz4YNF4KaHc/WzBVw5gvobn7sXwVuM4n12UK4AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTgtMDEtMTlUMTY6MTU6MDQrMDE6MDDPCDhkAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE4LTAxLTE5VDE2OjE1OjA0KzAxOjAwvlWA2AAAAABJRU5ErkJggg==');
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIIAAACCCAMAAAC93eDPAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpFMjhBMTFGNDk0RDhFNDExQTJGQ0REMUIzRTJGOTNFOCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDoxMzg1QzY1Qjk5NDMxMUU0QjZDRUE1MDhCQ0Q5NzNFQyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDoxMzg1QzY1QTk5NDMxMUU0QjZDRUE1MDhCQ0Q5NzNFQyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkUzOEExMUY0OTREOEU0MTFBMkZDREQxQjNFMkY5M0U4IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkUyOEExMUY0OTREOEU0MTFBMkZDREQxQjNFMkY5M0U4Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+gTsWkQAAABhQTFRFxs/Bpat/Zmtc////RUxCcnZnkJZ3QEc+Ln/EQQAAAVNJREFUWMPPE7EShCAQxCiU///kCw03zJoWN2VrdwIJhJ41Gs3YxJjEVMaAgyDJZYiEkaKBJcOukaBBIAQedoQYrfR7E9FP9Bix1WncI0UcdBpYuYjRfpJb0Ql1nPer4QLRrjtUZOcTaBoOVIFBz0Ih1Osg7Bc2lDQ0X66Q+0YiDBZicFSQ9BnSZOQiPkdMzVfhGkF4q7BfcdEaFiikCKGRvyKM3v0YJl9JrpuKQDhQfImRcEWw5JL1xYiKx0HA4q+9bXZElx0Jwx7ZvSAY5mA4d8C0WnCCywZIHkkURnr9BpEYbKzCIRJKGmr9BMcaVCBFPLJhGJJSZjwSMxHGx3JpKA0y3hiyECKRS0Pr1/ESZbdENgxxogATByuEi4QQJSHtTNSHC4M5bjA1hiAZgmEpRFx5gzAUvTCE2/mCnrj6Lp8RCEWoLJ97zx8BBgDOFGEGQfNsvgAAAABJRU5ErkJggg==');
             padding: 10px;
+            -webkit-overflow-scrolling: touch;
         }
         
         .fullscreen-overlay {
@@ -376,42 +538,87 @@
         
         .phone-input-area {
             display: flex;
-            padding: 10px;
+            padding: 8px 10px;
             background-color: #f0f0f0;
             align-items: center;
             flex-shrink: 0;
             border-top: 1px solid #ddd;
+            height: 60px;
+        }
+        
+        .phone-emoji {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
         }
         
         .phone-input-box {
             flex-grow: 1;
             background-color: white;
             border-radius: 20px;
-            padding: 8px 15px;
-            margin: 0 10px;
+            padding: 9px 15px;
+            margin: 0 8px;
             border: none;
-            height: 40px;
+            height: 36px;
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .phone-clip {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #666;
+            transform: rotate(45deg);
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        .phone-camera {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #666;
+            cursor: pointer;
         }
         
         .phone-send-button {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             background-color: #128C7E;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         
         .phone-chat-bubble {
             max-width: 80%;
-            padding: 8px 10px;
-            margin-bottom: 6px;
-            border-radius: 7px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 7.5px;
             position: relative;
             word-wrap: break-word;
             font-size: 14px;
+            line-height: 19px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
         }
         
         .phone-sent {
@@ -428,30 +635,151 @@
         
         .phone-sender-name {
             font-weight: bold;
-            color: #303030;
+            color: #5171ad;
             font-size: 12px;
             margin-bottom: 2px;
         }
         
         .phone-message-info {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
             font-size: 11px;
-            color: #999;
-            text-align: right;
+            color: rgba(0, 0, 0, 0.45);
             margin-top: 2px;
+        }
+        
+        .phone-message-time {
+            margin-right: 4px;
+        }
+        
+        .phone-message-status {
+            font-size: 14px;
+            margin-bottom: -2px;
+            color: #4FC3F7;
         }
         
         .phone-date-divider {
             text-align: center;
-            margin: 10px 0;
+            margin: 15px 0;
             position: relative;
         }
         
         .phone-date-divider span {
             background-color: #e1f3fb;
-            padding: 4px 8px;
-            border-radius: 5px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 12px;
             color: #555;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .typing-indicator {
+            display: none;
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            margin-right: auto;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+            max-width: 60px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .typing-dot {
+            height: 8px;
+            width: 8px;
+            margin: 0 2px;
+            background-color: #b6b6b6;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        /* Audio message */
+        .phone-audio-message {
+            display: flex;
+            align-items: center;
+            min-width: 140px;
+        }
+        
+        .phone-audio-play {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #D0D0D0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            cursor: pointer;
+            color: #505050;
+        }
+        
+        .phone-sent .phone-audio-play {
+            background-color: #9fd5b6;
+        }
+        
+        .phone-audio-waveform {
+            flex: 1;
+            height: 20px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwYXRoIGQ9Ik0wIDEwIHE1IC04IDEwIDAgdDEwIDAgMTAgMCAxMCAwIDEwIDAgMTAgMCAxMCAwIDEwIDAgMTAgMCk=" stroke="#505050" fill="none" stroke-width="1.5"/>
+        }
+        
+        .phone-audio-duration {
+            font-size: 11px;
+            color: #505050;
+            margin-left: 8px;
+        }
+        
+        /* Bottom navigation bar */
+        .phone-nav-bar {
+            height: 50px;
+            background-color: #075E54;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .phone-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0.7;
+            font-size: 10px;
+        }
+        
+        .phone-nav-item.active {
+            opacity: 1;
+        }
+        
+        .phone-nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
         }
         
         /* Responsive design */
@@ -470,7 +798,7 @@
             }
             
             .phone-container {
-                height: 500px;
+                height: 600px;
             }
         }
         
@@ -914,10 +1242,46 @@
                 return;
             }
             
+            // Get current time
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+            
             // Create phone container
             const phoneContainer = document.createElement('div');
             phoneContainer.className = 'phone-container';
             phoneContainer.id = 'phone-container';
+            
+            // Add side buttons
+            const volumeButtons = document.createElement('div');
+            volumeButtons.className = 'volume-buttons';
+            volumeButtons.innerHTML = `
+                <div class="volume-up"></div>
+                <div class="volume-down"></div>
+            `;
+            phoneContainer.appendChild(volumeButtons);
+            
+            const powerButton = document.createElement('div');
+            powerButton.className = 'power-button';
+            phoneContainer.appendChild(powerButton);
+            
+            // Create phone screen container
+            const phoneScreen = document.createElement('div');
+            phoneScreen.className = 'phone-screen';
+            
+            // Create status bar
+            const statusBar = document.createElement('div');
+            statusBar.className = 'status-bar';
+            statusBar.innerHTML = `
+                <div class="status-bar-time">${currentTime}</div>
+                <div class="status-bar-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            `;
+            phoneScreen.appendChild(statusBar);
             
             // Create phone header
             const phoneHeader = document.createElement('div');
@@ -929,30 +1293,83 @@
                             participantsArray.slice(0, 2).join(', ') + (participantsArray.length > 2 ? '...' : '') : 
                             participantsArray[0];
             
+            // Online status - random selection of statuses
+            const statuses = ['online', 'zuletzt heute um 14:23', 'schreibt...', `zuletzt gesehen am ${formatDate(chatMessages[chatMessages.length-1].date)}`];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            
             phoneHeader.innerHTML = `
                 <div class="phone-back">←</div>
-                <div class="phone-avatar">${chatName.charAt(0)}</div>
-                <div class="phone-header-title">${chatName}</div>
-                <div class="phone-fullscreen-toggle" id="fullscreen-btn">⛶</div>
+                <div class="phone-header-content">
+                    <div class="phone-avatar">${chatName.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <div class="phone-header-title">${chatName}</div>
+                        <div class="phone-header-subtitle">${randomStatus}</div>
+                    </div>
+                </div>
+                <div class="phone-header-actions">
+                    <div class="phone-header-action">📞</div>
+                    <div class="phone-header-action">📹</div>
+                    <div class="phone-fullscreen-toggle" id="fullscreen-btn">⛶</div>
+                </div>
             `;
+            phoneScreen.appendChild(phoneHeader);
             
             // Create chat container
             const phoneChatContainer = document.createElement('div');
             phoneChatContainer.className = 'phone-chat-container';
+            phoneChatContainer.id = 'phone-chat-container';
+            phoneScreen.appendChild(phoneChatContainer);
+            
+            // Create typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            phoneChatContainer.appendChild(typingIndicator);
             
             // Create input area
             const phoneInputArea = document.createElement('div');
             phoneInputArea.className = 'phone-input-area';
             phoneInputArea.innerHTML = `
                 <div class="phone-emoji">😊</div>
+                <div class="phone-clip">📎</div>
                 <div class="phone-input-box">Nachricht</div>
-                <div class="phone-send-button">→</div>
+                <div class="phone-camera">📷</div>
+                <div class="phone-send-button">🎤</div>
             `;
+            phoneScreen.appendChild(phoneInputArea);
             
-            // Add elements to phone container
-            phoneContainer.appendChild(phoneHeader);
-            phoneContainer.appendChild(phoneChatContainer);
-            phoneContainer.appendChild(phoneInputArea);
+            // Create navigation bar
+            const navBar = document.createElement('div');
+            navBar.className = 'phone-nav-bar';
+            navBar.innerHTML = `
+                <div class="phone-nav-item">
+                    <div class="phone-nav-icon">📱</div>
+                    <div>Status</div>
+                </div>
+                <div class="phone-nav-item">
+                    <div class="phone-nav-icon">📞</div>
+                    <div>Anrufe</div>
+                </div>
+                <div class="phone-nav-item active">
+                    <div class="phone-nav-icon">💬</div>
+                    <div>Chats</div>
+                </div>
+                <div class="phone-nav-item">
+                    <div class="phone-nav-icon">👤</div>
+                    <div>Kontakte</div>
+                </div>
+            `;
+            phoneScreen.appendChild(navBar);
+            
+            // Add phone screen to container
+            phoneContainer.appendChild(phoneScreen);
             
             // Add phone container to phone section
             phoneSection.appendChild(phoneContainer);
@@ -960,8 +1377,32 @@
             // Add fullscreen toggle function
             document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
             
+            // Simulate typing indicator randomly
+            setTimeout(() => {
+                simulateTyping();
+            }, 3000);
+            
             // Render messages in batches to avoid freezing
             renderPhoneMessages(phoneChatContainer, chatMessages);
+        }
+        
+        // Simulate typing
+        function simulateTyping() {
+            if (Math.random() < 0.3) { // 30% chance to show typing
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        typingIndicator.style.display = 'none';
+                        // Schedule next typing simulation
+                        setTimeout(simulateTyping, Math.random() * 30000 + 10000); // Random between 10-40 seconds
+                    }, Math.random() * 3000 + 2000); // Show for 2-5 seconds
+                }
+            } else {
+                // Schedule next typing simulation
+                setTimeout(simulateTyping, Math.random() * 20000 + 5000); // Random between 5-25 seconds
+            }
         }
         
         // Toggle fullscreen mode for phone view
@@ -973,6 +1414,7 @@
                 // Exit fullscreen mode
                 fullscreenOverlay.classList.remove('active');
                 phoneSection.appendChild(phoneContainer);
+                phoneContainer.classList.remove('fullscreen');
                 document.getElementById('fullscreen-btn').textContent = '⛶';
                 
                 // If browser is in fullscreen mode, exit that too
@@ -985,6 +1427,7 @@
                 // Enter fullscreen mode
                 fullscreenOverlay.classList.add('active');
                 fullscreenOverlay.appendChild(phoneContainer);
+                phoneContainer.classList.add('fullscreen');
                 document.getElementById('fullscreen-btn').textContent = '❌';
                 
                 // Request browser fullscreen if supported
@@ -1010,8 +1453,22 @@
             progressBar.style.width = '0%';
             progressText.textContent = '0%';
             
-            // Clear container
+            // Clear container except typing indicator
             container.innerHTML = '';
+            
+            // Add typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.style.display = 'none';
+            typingIndicator.innerHTML = `
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            container.appendChild(typingIndicator);
             
             // Process batches
             function processBatch(batchIndex) {
@@ -1052,18 +1509,69 @@
                         bubble.appendChild(senderElement);
                     }
                     
-                    // Add message text
-                    const messageText = document.createElement('div');
-                    messageText.className = 'phone-message-text';
-                    messageText.textContent = message.text;
-                    bubble.appendChild(messageText);
+                    // Check if this is potentially an audio message and add a 5% chance
+                    let isAudioMessage = false;
+                    if (message.text.length < 30 && 
+                        (message.text.toLowerCase().includes('audio') || 
+                         message.text.toLowerCase().includes('sprachnachricht') ||
+                         message.text.toLowerCase().includes('voice')) || 
+                        Math.random() < 0.05) {
+                        isAudioMessage = true;
+                    }
                     
-                    // Add message info (time)
+                    if (isAudioMessage && i % 10 === 0) { // Only convert some messages to audio
+                        // Create audio message element
+                        const audioElement = document.createElement('div');
+                        audioElement.className = 'phone-audio-message';
+                        audioElement.innerHTML = `
+                            <div class="phone-audio-play">▶</div>
+                            <div class="phone-audio-waveform"></div>
+                            <div class="phone-audio-duration">0:${Math.floor(Math.random() * 59) + 10}</div>
+                        `;
+                        bubble.appendChild(audioElement);
+                    } else {
+                        // Add message text
+                        const messageText = document.createElement('div');
+                        messageText.className = 'phone-message-text';
+                        messageText.textContent = message.text;
+                        bubble.appendChild(messageText);
+                    }
+                    
+                    // Add message info (time and status)
                     const messageInfo = document.createElement('div');
                     messageInfo.className = 'phone-message-info';
-                    messageInfo.textContent = message.time;
-                    bubble.appendChild(messageInfo);
                     
+                    // Time
+                    const messageTime = document.createElement('span');
+                    messageTime.className = 'phone-message-time';
+                    messageTime.textContent = message.time;
+                    messageInfo.appendChild(messageTime);
+                    
+                    // Status for sent messages (checkmarks)
+                    if (isFromMe) {
+                        const messageStatus = document.createElement('span');
+                        messageStatus.className = 'phone-message-status';
+                        
+                        // Randomly assign message status
+                        const rand = Math.random();
+                        if (rand < 0.1) {
+                            // Not delivered yet
+                            messageStatus.textContent = '✓';
+                            messageStatus.style.color = '#888';
+                        } else if (rand < 0.3) {
+                            // Delivered but not read
+                            messageStatus.textContent = '✓✓';
+                            messageStatus.style.color = '#888';
+                        } else {
+                            // Read
+                            messageStatus.textContent = '✓✓';
+                            messageStatus.style.color = '#4FC3F7';
+                        }
+                        
+                        messageInfo.appendChild(messageStatus);
+                    }
+                    
+                    bubble.appendChild(messageInfo);
                     fragment.appendChild(bubble);
                 }
                 
@@ -1082,6 +1590,11 @@
                     
                     // Scroll to bottom
                     container.scrollTop = container.scrollHeight;
+                    
+                    // Start typing simulation after a delay
+                    setTimeout(() => {
+                        simulateTyping();
+                    }, 2000);
                 }
             }
             
